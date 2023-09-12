@@ -11,6 +11,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
+const authRoute = require('./routes/auth-route')
 const notFoundMiddleware = require('./middlewares/not-found');
 const errorMiddleware = require('./middlewares/error');
 
@@ -20,13 +21,15 @@ app.use(morgan('dev'));
 app.use(
 	rateLimit({
 		windowMs: 1000 * 60 * 15,
-		max: 1,
+		max: 1000,
 		message: { message: 'you are hacker' },
 	})
 );
 app.use(helmet());
 app.use(cors());
 app.use(express.json()); // middleware pass request body
+
+app.use('/auth', authRoute)
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
