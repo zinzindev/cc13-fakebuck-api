@@ -65,7 +65,7 @@ exports.login = async (req, res, next) => {
 			createError('invalid email or mobile or password', 400);
 		}
 
-		const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SERET_KEY, {
+		const accessToken = jwt.sign({ id: user.id }, process.env.JWT_SECRET_KEY, {
 			expiresIn: process.env.JWT_EXPIRES_IN,
 		});
 
@@ -74,3 +74,7 @@ exports.login = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.getMe = (req, res, next) => {
+	res.status(200).json({user: req.user});
+}
