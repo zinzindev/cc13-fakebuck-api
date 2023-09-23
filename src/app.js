@@ -1,6 +1,7 @@
 // *** for config models ***
 // const { sequelize } = require('./models');
 // sequelize.sync({ force: true });
+// sequelize.sync({ alter: true });
 
 // *** for create server
 require('dotenv').config();
@@ -11,7 +12,11 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
 
-const authRoute = require('./routes/auth-route')
+const authRoute = require('./routes/auth-route');
+const userRoute = require('./routes/user-route');
+const friendRoute = require('./routes/friend-route');
+const authenticateMiddleware = require('./middlewares/authenticate');
+
 const notFoundMiddleware = require('./middlewares/not-found');
 const errorMiddleware = require('./middlewares/error');
 
@@ -29,7 +34,9 @@ app.use(helmet());
 app.use(cors());
 app.use(express.json()); // middleware pass request body
 
-app.use('/auth', authRoute)
+app.use('/auth', authRoute);
+app.use('/users', authenticateMiddleware, userRoute);
+app.use('/friends', authenticateMiddleware, friendRoute);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
