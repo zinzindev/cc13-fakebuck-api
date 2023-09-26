@@ -84,3 +84,12 @@ exports.getUserInfoById = async (req, res, next) => {
 		next(error);
 	}
 };
+
+exports.updateProfileImage = async (req, res, next) => {
+	try {
+		console.lo g(req.files)
+		res.status(200).json();
+	} catch (error) {
+		next(error);
+	}
+};
