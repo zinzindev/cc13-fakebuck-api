@@ -96,7 +96,7 @@ exports.updateProfileImage = async (req, res, next) => {
 		const coverPublicId = coverImage ? cloudinary.getPublicId(coverImage) : null;
 
 		if (!req.files.profileImage && !req.files.coverImage) {
-			createError('profile image or cover image is required'  );
+			createError('profile image or cover image is required');
 		} else if (req.files.profileImage && req.files.coverImage) {
 			const [profileImage, coverImage] = await Promise.all([
 				cloudinary.upload(req.files.profileImage[0].path, profilePublicId),
@@ -117,8 +117,10 @@ exports.updateProfileImage = async (req, res, next) => {
 			value = { coverImage };
 		}
 
+		// console.log(value); // {profileImage: 'https://...'}
 		await User.update(value, { where: { id: req.user.id } });
-		res.status(200).json({ message: 'success update' });
+		// res.status(200).json({ message: 'success update' });
+		res.status(200).json(value);
 	} catch (error) {
 		next(error);
 	} finally {
