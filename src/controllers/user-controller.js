@@ -76,6 +76,7 @@ exports.getUserInfoById = async (req, res, next) => {
 			}
 		}
 
+		// console.log(JSON.stringify(userFriends, null, 2));
 		// console.log(JSON.stringify(friends, null, 2));
 		res.status(200).json({
 			user,
