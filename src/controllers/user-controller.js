@@ -19,7 +19,6 @@ exports.getUserInfoById = async (req, res, next) => {
 			where: { id: req.params.userId },
 			attributes: { exclude: ['password'] },
 		});
-
 		if (!user) {
 			createError('user with this id is not found', 400);
 		}
@@ -90,7 +89,7 @@ exports.getUserInfoById = async (req, res, next) => {
 
 exports.updateProfileImage = async (req, res, next) => {
 	try {
-		console.log(req.files);
+		// console.log(req.files);
 		let value;
 		const { profileImage, coverImage } = req.user;
 		const profilePublicId = profileImage ? cloudinary.getPublicId(profileImage) : null;
