@@ -13,7 +13,7 @@ exports.upload = async (filePath, publicId) => {
 
 	// const {secure_url, public_id} = await cloudinary.uploader.upload(filePath, {
 	const result = await cloudinary.uploader.upload(filePath, option);
-	console.log(result);
+	// console.log(result);
 	// return {secure_url, public_id};
 	return result.secure_url;
 };

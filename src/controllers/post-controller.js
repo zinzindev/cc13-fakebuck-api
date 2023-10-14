@@ -1,10 +1,11 @@
-const /* `fs` stands for "file system" and it is a built-in module in Node.js that provides file
-system-related functionality. In this code snippet, `fs` is being used to perform file system
-operations, specifically to delete a file using the `unlink` method. */
-fs = require('fs');
+const fs = require('fs');
+
 const { validateCreatePost } = require('../validators/post-validator');
+const { Post, Friend, User } = require('../models');
+const { FRIEND_ACCEPTED } = require('../config/constant');
+const { Op, JSON } = require('sequelize');
 const cloudinary = require('../utils/cloudinary');
-const { Post } = require('../models');
+const createError = require('../utils/create-error');
 
 exports.createPost = async (req, res, next) => {
 	try {
@@ -17,7 +18,7 @@ exports.createPost = async (req, res, next) => {
 			value.image = await cloudinary.upload(value.image);
 		}
 
-    value.userId = req.user.id;
+		value.userId = req.user.id;
 
 		const post = await Post.create(value);
 
@@ -30,3 +31,51 @@ exports.createPost = async (req, res, next) => {
 		}
 	}
 };
+
+exports.getAllPostIncludeFriend = async (req, res, next) => {
+	try {
+		// SELECT * FROM user_id = req.user.id OR user_id = friendId OR ...
+		// SELECT * FROM user_id IN (req.user.id, friendId)
+
+		const friends = await Friend.findAll({
+			where: {
+				status: FRIEND_ACCEPTED,
+				[Op.or]: [{ requesterId: req.user.id }, { accepterId: req.user.id }],
+			},
+		});
+
+		const friendIds = friends.map((el) =>
+			el.requesterId === req.user.id ? el.accepterId : el.requesterId
+		);
+
+		const posts = await Post.findAll({
+			where: {
+				userId: [req.user.id, ...friendIds],
+			},
+			order: [['updatedAt', 'DESC']],
+			include: {
+				model: User,
+				attributes: {
+					exclude: ['password'],
+				},
+			},
+		});
+		res.status(200).json({ posts });
+	} catch (error) {}
+};
+
+exports.deletePost = async (req, res, next) => {
+	try {
+		const post = await Post.findOne({where: {id: req.params.postId}})
+		if(!post){
+			createError('this post was not found', 400);
+		}
+		if(post.userId !== req.user.id){
+			createError('you have no permission to delete this post', 403);
+		}
+		await post.destroy();
+		res.status(204).json();
+	} catch (error) {
+		next(error);
+	}
+}
