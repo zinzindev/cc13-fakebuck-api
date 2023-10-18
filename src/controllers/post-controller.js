@@ -1,7 +1,7 @@
 const fs = require('fs');
 
 const { validateCreatePost } = require('../validators/post-validator');
-const { Post, Friend, User } = require('../models');
+const { Post, Friend, User, Like, Comment } = require('../models');
 const { FRIEND_ACCEPTED } = require('../config/constant');
 const { Op, JSON } = require('sequelize');
 const cloudinary = require('../utils/cloudinary');
@@ -21,7 +21,6 @@ exports.createPost = async (req, res, next) => {
 		value.userId = req.user.id;
 
 		const post = await Post.create(value);
-
 		res.status(201).json({ post });
 	} catch (error) {
 		next(error);
@@ -53,24 +52,46 @@ exports.getAllPostIncludeFriend = async (req, res, next) => {
 				userId: [req.user.id, ...friendIds],
 			},
 			order: [['updatedAt', 'DESC']],
-			include: {
-				model: User,
-				attributes: {
-					exclude: ['password'],
+			include: [
+				{
+					model: User,
+					attributes: {
+						exclude: ['password'],
+					},
 				},
-			},
+				{
+					model: Like,
+					include: {
+						model: User,
+						attributes: {
+							exclude: ['password'],
+						},
+					},
+				},
+				{
+					model: Comment,
+					include: {
+						model: User,
+						attributes: {
+							exclude: ['password'],
+						},
+					},
+				}
+			],
 		});
 		res.status(200).json({ posts });
-	} catch (error) {}
+	} catch (error) {
+		next(error);
+	}
 };
 
 exports.deletePost = async (req, res, next) => {
 	try {
-		const post = await Post.findOne({where: {id: req.params.postId}})
-		if(!post){
+		const post = await Post.findOne({ where: { id: req.params.postId } });
+		if (!post) {
 			createError('this post was not found', 400);
 		}
-		if(post.userId !== req.user.id){
+		if (post.userId !== req.user.id) {
 			createError('you have no permission to delete this post', 403);
 		}
 		await post.destroy();
@@ -78,4 +99,4 @@ exports.deletePost = async (req, res, next) => {
 	} catch (error) {
 		next(error);
 	}
-}
+};

@@ -1,4 +1,5 @@
 const Joi = require('joi');
+
 const validate = require('./validate');
 
 const createPostSchema = Joi.object({
